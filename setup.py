@@ -15,6 +15,7 @@ setup(name='nltk-opennlp',
       author_email='danpaulius@gmail.com',
       url='https://github.com/paudan/treetagger-python',
       py_modules=['nltk-opennlp'],
+      packages=['nltk_opennlp'],
       install_requires=['nltk'],
       license='GPL Version 3',
     )
