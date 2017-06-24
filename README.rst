@@ -1,5 +1,5 @@
 nltk-opennlp
-=================
+============
 
 NLTK interface with Apache OpenNLP
 
@@ -95,3 +95,78 @@ The output is a list of (token, tag):
 
     [('Das', 'ART'), ('Haus', 'NN'), ('hat', 'VAFIN'), ('einen', 'ART'), (
     'großen', 'ADJA'), ('hübcbschen', 'ADJA'), ('Garten.', 'NN')]
+
+Named entity recognition (NER)
+------------------------------
+
+This module also supports named entity recognition, which allows to tag particular types of entities. Again, chunking
+is performed on the set of (token, tag) entries (note, that NLTK taggers could be used instead of ``OpenNLPTagger``):
+
+.. code:: python
+
+    language='en'
+    tt = OpenNLPTagger(language=language,
+                       path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+                       path_to_model=os.path.join(opennlp_dir, 'opennlp_models', 'en-pos-maxent.bin'))
+    phrase = 'Pierre Vinken , 61 years old , will join Martin Vinken as a nonexecutive director Nov. 29 .'
+    sentence = tt.tag(phrase)
+    cp = OpenNERChunker(language=language,
+                        path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+                        path_to_chunker=os.path.join(opennlp_dir, 'opennlp_models', '{}-chunker.bin'.format(language)),
+                        path_to_ner_model=os.path.join(opennlp_dir, 'opennlp_models', '{}-ner-person.bin'.format(language)))
+    print(cp.parse(sentence))
+
+The output is a chunk parse tree with particular types of entities:
+
+::
+    (ROOT
+      (PERSON ( (Pierre NNP) (Vinken NNP)))
+      (, ,)
+      (NP (61 CD) (years NNS))
+      (ADJP (old JJ))
+      (, ,)
+      (VP (will MD) (join VB))
+      (PERSON ( (Martin NNP) (Vinken NNP)))
+      (PP (as IN))
+      (NP (a DT) (nonexecutive JJ) (director NN))
+      (NP (Nov. NNP) (29 CD))
+      (. .))
+
+A multi-tagger option is similar, except that it allows to set multiple NER models for tagging:
+
+.. code:: python
+
+    language='en'
+    phrase = 'John Haddock , 32 years old male , travelled to Cambridge , USA in October 20 while paying 6.50 dollars for the ticket'
+    sentence = tt.tag(phrase)
+    cp = OpenNERChunkerMulti(language=language,
+                        path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+                        path_to_chunker=os.path.join(opennlp_dir, 'opennlp_models', '{}-chunker.bin'.format(language)),
+                        ner_models=[os.path.join(opennlp_dir, 'opennlp_models', '{}-ner-person.bin'.format(language)),
+                                    os.path.join(opennlp_dir, 'opennlp_models', '{}-ner-date.bin'.format(language)),
+                                    os.path.join(opennlp_dir, 'opennlp_models', '{}-ner-location.bin'.format(language)),
+                                    os.path.join(opennlp_dir, 'opennlp_models', '{}-ner-time.bin'.format(language)),
+                                    os.path.join(opennlp_dir, 'opennlp_models', '{}-ner-money.bin'.format(language))])
+    print(cp.parse(sentence))
+
+The resuting chunk tree contains multiple types of identified entities:
+
+::
+    (ROOT
+      (PERSON ( (John NNP) (Haddock NNP)))
+      (, ,)
+      (NP (32 CD) (years NNS))
+      (NP (old JJ) (male NN))
+      (, ,)
+      (VP (travelled VBN))
+      (PP (to TO))
+      (LOCATION ( (Cambridge NNP)))
+      (, ,)
+      (NP (USA NNP))
+      (PP (in IN))
+      (DATE ( (October NNP) (20 CD)))
+      (PP (while IN))
+      (VP (paying VBG))
+      (NP (6.50 CD) (dollars NNS))
+      (PP (for IN))
+      (NP (the DT) ticket_NN))

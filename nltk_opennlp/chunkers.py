@@ -16,7 +16,6 @@ from nltk.internals import find_binary
 from nltk.chunk.api import ChunkParserI
 from nltk.tree import Tree
 
-_opennlp_languages = ['da', 'de', 'en', 'es', 'nl', 'pt', 'se']
 
 class OpenNLPChunker(ChunkParserI):
 
@@ -35,12 +34,9 @@ class OpenNLPChunker(ChunkParserI):
         opennlp_paths = ['.', '/usr/bin', '/usr/local/apache-opennlp', '/opt/local/apache-opennlp', '~/apache-opennlp']
         opennlp_paths = list(map(os.path.expanduser, opennlp_paths))
 
-        if language in _opennlp_languages:
-            opennlp_bin_name = "opennlp"
-            if sys.platform.startswith("win"):
-                opennlp_bin_name += ".bat"
-        else:
-            raise LookupError('Language not in language list!')
+        opennlp_bin_name = "opennlp"
+        if sys.platform.startswith("win"):
+            opennlp_bin_name += ".bat"
         try:
             self._opennlp_bin = find_binary(opennlp_bin_name, os.path.join(path_to_bin, opennlp_bin_name),
                                           env_vars=('OPENNLP_HOME', 'OPENNLP'),
@@ -75,6 +71,109 @@ class OpenNLPChunker(ChunkParserI):
         output = "(ROOT {} )".format(output)
         try:
             parse = Tree.fromstring(output)
+        except Exception:
+            parse = None
+        return parse
+
+
+class OpenNERChunker(OpenNLPChunker):
+
+    def __init__(self, path_to_bin=None, path_to_chunker=None,
+                 path_to_ner_model = None, language='en', verbose=False):
+        OpenNLPChunker.__init__(self, path_to_bin=path_to_bin, path_to_model=path_to_chunker,
+                                language=language, verbose=verbose)
+        self._ner_model = path_to_ner_model
+
+
+    def parse(self, tokens):
+
+        treeObj = OpenNLPChunker.parse(self, tokens)
+        treeStr = treeObj.__str__()
+
+        _input = ' '.join([token[0] for token in tokens])
+
+        p = Popen([self._opennlp_bin, "TokenNameFinder", self._ner_model],
+                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+        if sys.version_info >= (3,):
+            (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
+            stdout = stdout.decode('utf-8')
+        else:
+            (stdout, stderr) = p.communicate(_input)
+
+        # Check the return code.
+        if p.returncode != 0:
+            raise OSError('OpenNLP command failed!')
+
+        # Clean the execution time information
+        output = re.sub(r"\nExecution time:(.*)$", "", stdout)
+        # Extract entities
+        tag_match = re.compile('<START:(.*?)>(.*?)<END>')
+        matches = tag_match.findall(output)
+        for match in matches:
+            tagname = match[0].upper()
+            pattern = '\s+'.join('\(\s*'+ token + '\s+[A-Z]+\s*\)'
+                                 for token in match[1].strip().split(' '))
+            tpattern = '(?P<token>'+ pattern + ')'
+            tagged_pattern = '('+ tagname + ' (\g<token>))'
+            treeStr = re.sub(tpattern, tagged_pattern, treeStr, flags=re.UNICODE)
+            # "Move up" NER tags when possible
+            treeStr = re.sub('\(\s*NP\s+(?P<subtree>\(' + tagname + '(.*)\s*\)\s*\))\s*\)',
+                             '\g<1>', treeStr, flags=re.UNICODE)
+        try:
+            parse = Tree.fromstring(treeStr)
+        except Exception:
+            parse = None
+        return parse
+
+
+class OpenNERChunkerMulti(OpenNLPChunker):
+
+    def __init__(self, path_to_bin=None, path_to_chunker=None,
+                 ner_models = [], language='en', verbose=False):
+        OpenNLPChunker.__init__(self, path_to_bin=path_to_bin, path_to_model=path_to_chunker,
+                                language=language, verbose=verbose)
+        self._ner_models = ner_models
+
+
+    def parse(self, tokens):
+
+        treeObj = OpenNLPChunker.parse(self, tokens)
+        treeStr = treeObj.__str__()
+
+        _input = ' '.join([token[0] for token in tokens])
+
+        for model in self._ner_models:
+            p = Popen([self._opennlp_bin, "TokenNameFinder", model],
+                      shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+            if sys.version_info >= (3,):
+                (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
+                stdout = stdout.decode('utf-8')
+            else:
+                (stdout, stderr) = p.communicate(_input)
+
+            # Check the return code.
+            if p.returncode != 0:
+                raise OSError('OpenNLP command failed!')
+
+            # Clean the execution time information
+            output = re.sub(r"\nExecution time:(.*)$", "", stdout)
+            # Extract entities
+            tag_match = re.compile('<START:(.*?)>(.*?)<END>')
+            matches = tag_match.findall(output)
+            for match in matches:
+                tagname = match[0].upper()
+                pattern = '\s+'.join('\(\s*'+ token + '\s+[A-Z]+\s*\)'
+                                     for token in match[1].strip().split(' '))
+                tpattern = '(?P<token>'+ pattern + ')'
+                tagged_pattern = '('+ tagname + ' (\g<token>))'
+                treeStr = re.sub(tpattern, tagged_pattern, treeStr, flags=re.UNICODE)
+                # "Move up" NER tags when possible
+                treeStr = re.sub('\(\s*NP\s+(?P<subtree>\(' + tagname + '(.*)\s*\)\s*\))\s*\)',
+                                 '\g<1>', treeStr, flags=re.UNICODE)
+        try:
+            parse = Tree.fromstring(treeStr)
         except Exception:
             parse = None
         return parse
