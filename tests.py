@@ -2,8 +2,8 @@
 import os
 import unittest
 
-from nltk_opennlp.opennlp_chunker import OpenNLPChunker
-from nltk_opennlp.opennlp_tagger import OpenNLPTagger
+from nltk_opennlp.chunkers import OpenNLPChunker
+from nltk_opennlp.taggers import OpenNLPTagger
 
 opennlp_dir = '../pynlp-sandbox'
 
