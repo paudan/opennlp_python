@@ -11,6 +11,7 @@ A Python module for interfacing with the Apache OpenNLP package
 import os
 import sys
 import re
+import gc
 from subprocess import Popen, PIPE
 from nltk.internals import find_binary
 from nltk.tag.api import TaggerI
@@ -65,8 +66,9 @@ class OpenNLPTagger(TaggerI):
             _input = sentences
 
         # Run the tagger and get the output
+        gc.collect()
         p = Popen([self._opennlp_bin, "POSTagger", self._model_path],
-                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
 
         if sys.version_info >= (3,):
             (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))

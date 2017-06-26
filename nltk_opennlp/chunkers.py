@@ -5,9 +5,10 @@
 # Author: Paulius Danenas <danpaulius@gmail.com>
 
 """
-A Python module for interfacing with the Apache OpenNLP package and obtaining parse tree
+A Python module for interfacing with the Apache OpenNLP package and obtaining chunk parse tree
 """
 
+import gc
 import os
 import sys
 import re
@@ -48,8 +49,9 @@ class OpenNLPChunker(ChunkParserI):
     def parse(self, tokens):
         _input = ' '.join([token[0] + "_" + token[1] for token in tokens])
 
+        gc.collect()
         p = Popen([self._opennlp_bin, "ChunkerME", self._model_path],
-                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
 
         if sys.version_info >= (3,):
             (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
@@ -92,8 +94,9 @@ class OpenNERChunker(OpenNLPChunker):
 
         _input = ' '.join([token[0] for token in tokens])
 
+        gc.collect()
         p = Popen([self._opennlp_bin, "TokenNameFinder", self._ner_model],
-                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
 
         if sys.version_info >= (3,):
             (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
@@ -144,8 +147,9 @@ class OpenNERChunkerMulti(OpenNLPChunker):
         _input = ' '.join([token[0] for token in tokens])
 
         for model in self._ner_models:
+            gc.collect()
             p = Popen([self._opennlp_bin, "TokenNameFinder", model],
-                      shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                      shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
 
             if sys.version_info >= (3,):
                 (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
