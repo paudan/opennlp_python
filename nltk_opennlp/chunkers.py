@@ -66,11 +66,11 @@ class OpenNLPChunker(ChunkParserI):
         # Clean the execution time information
         output = re.sub(r"\nExecution time:(.*)$", "", stdout)
         # Transform into compatible parse tree string
-        output = output.replace("[", "(").replace("]", ")")
+        output = output.replace("[", "(").replace("]", " )")
         pattern = re.compile(r'\s+([^_\(\)]+)_([^_\(\)]+)\s+')
-        output = re.sub(pattern, r' (\1 \2) ', output)
-        output = re.sub(pattern, r' (\1 \2) ', output)
-        output = "(ROOT {} )".format(output)
+        output = re.sub(pattern, r' (\2 \1) ', output)
+        output = re.sub(pattern, r' (\2 \1) ', output)
+        output = "(S {} )".format(output)
         try:
             parse = Tree.fromstring(output)
         except Exception:
