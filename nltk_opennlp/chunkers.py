@@ -115,7 +115,7 @@ class OpenNERChunker(OpenNLPChunker):
         matches = tag_match.findall(output)
         for match in matches:
             tagname = match[0].upper()
-            pattern = '\s+'.join('\(\s*'+ token + '\s+[A-Z]+\s*\)'
+            pattern = '\s+'.join('\(\s*[A-Z]+\s+' + token + '\s*\)'
                                  for token in match[1].strip().split(' '))
             tpattern = '(?P<token>'+ pattern + ')'
             tagged_pattern = '('+ tagname + ' (\g<token>))'
@@ -145,6 +145,7 @@ class OpenNERChunkerMulti(OpenNLPChunker):
         treeStr = treeObj.__str__()
 
         _input = ' '.join([token[0] for token in tokens])
+        print(_input)
 
         for model in self._ner_models:
             gc.collect()
@@ -168,7 +169,7 @@ class OpenNERChunkerMulti(OpenNLPChunker):
             matches = tag_match.findall(output)
             for match in matches:
                 tagname = match[0].upper()
-                pattern = '\s+'.join('\(\s*'+ token + '\s+[A-Z]+\s*\)'
+                pattern = '\s+'.join('\(\s*[A-Z]+\s+'+ token + '\s*\)'
                                      for token in match[1].strip().split(' '))
                 tpattern = '(?P<token>'+ pattern + ')'
                 tagged_pattern = '('+ tagname + ' (\g<token>))'
