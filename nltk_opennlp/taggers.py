@@ -53,7 +53,14 @@ class OpenNLPTagger(TaggerI):
 
         # Write the actual sentences to the temporary input file
         if isinstance(sentences, list):
-            _input = '\n'.join((x for x in sentences))
+            _input = ''
+            for sent in sentences:
+                if isinstance(sent, list):
+                    _input += ' '.join((x for x in sent))
+                else:
+                    _input += ' ' + sent
+            _input = _input.lstrip()
+            _input += '\n'
         else:
             _input = sentences
 
