@@ -119,6 +119,7 @@ is performed on the set of (token, tag) entries (note, that NLTK taggers could b
 The output is a chunk parse tree with particular types of entities:
 
 ::
+
     (ROOT
       (PERSON ( (Pierre NNP) (Vinken NNP)))
       (, ,)
@@ -152,6 +153,7 @@ A multi-tagger option is similar, except that it allows to set multiple NER mode
 The resuting chunk tree contains multiple types of identified entities:
 
 ::
+
     (ROOT
       (PERSON ( (John NNP) (Haddock NNP)))
       (, ,)
