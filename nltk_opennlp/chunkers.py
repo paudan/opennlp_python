@@ -145,7 +145,6 @@ class OpenNERChunkerMulti(OpenNLPChunker):
         treeStr = treeObj.__str__()
 
         _input = ' '.join([token[0] for token in tokens])
-        print(_input)
 
         for model in self._ner_models:
             gc.collect()
