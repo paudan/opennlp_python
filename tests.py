@@ -89,6 +89,46 @@ class OpenNLPTest(unittest.TestCase):
                                                            '{}-ner-person.bin'.format(language)),
                             use_punc_tag=True)
         print(cp.parse(sentence))
+        #
+        # from nltk.tree import Tree, ParentedTree
+        #
+        # def create_tree(tree):
+        #     nodes = []
+        #     for n in tree:
+        #         subtrees = [subtree for subtree in n.subtrees(filter=lambda k: k != n)]
+        #         if len(subtrees) > 0:
+        #             subnodes = create_tree(n)
+        #             nodes.append(ParentedTree(n.label(), subnodes))
+        #         else:
+        #             parent_label = n.parent().label() if n.parent() is not None \
+        #                                                  and n.parent().label() not in ['S', 'ROOT'] else None
+        #             nodes.append(ParentedTree(parent_label, [(n[0], n.label())]))
+        #     return nodes
+        #
+        # def move_up(tree):
+        #     for n in tree:
+        #         if isinstance(n, Tree):
+        #             subtrees = [subtree for subtree in n.subtrees(filter=lambda k: k != n)]
+        #             for subtree in subtrees:
+        #                 print(n, subtree, subtree.label() == n.label())
+        #                 if subtree.label() == n.label():
+        #                     tmp = subtree
+        #                     parent = subtree.parent()
+        #                     parent.remove(tmp)
+        #                     subsub = [s for s in subtree.subtrees(filter=lambda k: k != subtree)]
+        #                     if len(subsub) == 0:
+        #                         n.extend(tmp.leaves())
+        #                     else:
+        #                         move_up(subtree)
+        #     return tree
+        #
+        # tree = ParentedTree.convert(tree)
+        # new_tree = ParentedTree('S', create_tree(tree))
+        # new_tree = move_up(new_tree)
+        # print()
+        # print(tree)
+        # print()
+        # print(new_tree)
 
 
     def test_opennlp_ner_multichunker(self):

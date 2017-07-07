@@ -16,7 +16,7 @@ import string
 from subprocess import Popen, PIPE
 from nltk.internals import find_binary
 from nltk.chunk.api import ChunkParserI
-from nltk.tree import Tree
+from nltk.tree import Tree, ParentedTree
 
 
 class OpenNLPChunker(ChunkParserI):
@@ -25,9 +25,9 @@ class OpenNLPChunker(ChunkParserI):
 
     def __init__(self, path_to_bin=None, path_to_chunker=None, verbose=False, use_punc_tag=False):
         """
-        Initialize the OpenNLPTagger.
+        Initialize the OpenNLPChunker.
         :param path_to_bin: Path to bin directory of OpenNLP installation
-        :param path_to_chunker: The path to OpenNLP POS tagger .bin file.
+        :param path_to_chunker: The path to OpenNLP POS chunker .bin file.
         :param use_punc_tag: Whether standalone punctuation marks should be tagged using PUNC tag
 
         """
@@ -52,12 +52,12 @@ class OpenNLPChunker(ChunkParserI):
 
     def __parse_punc_tags__(self, output):
         if self.use_punc_tag == True:
-            return re.sub(r'\(\s*([' + string.punctuation + ']+)\s*/\s*([' + string.punctuation + ']+)\s*\)',
-                          r'(\1/PUNC)', output)
+            return re.sub(r'\(\s*([' + string.punctuation + ']+)\s+([' + string.punctuation + ']+)\s*\)',
+                          r'(PUNC \1)', output)
         return output
 
 
-    def parse(self, tokens):
+    def __perform_parsing__(self, tokens):
         _input = ' '.join([token[0] + "_" + token[1] for token in tokens])
 
         gc.collect()
@@ -79,16 +79,58 @@ class OpenNLPChunker(ChunkParserI):
         # Transform into compatible parse tree string
         output = output.replace("[", "(").replace("]", " )")
         pattern = re.compile(r'\s+([^_\(\)]+)_([^_\(\)]+)\s+')
-        output = re.sub(pattern, r' (\1/\2) ', output)
-        output = re.sub(pattern, r' (\1/\2) ', output)
+        output = re.sub(pattern, r' (\2 \1) ', output)
+        output = re.sub(pattern, r' (\2 \1) ', output)
         # Add punctuation tags if use_punc_tag is set
         output = self.__parse_punc_tags__(output)
         output = "(S {} )".format(output)
         try:
-            parse = Tree.fromstring(output)
+            parse = Tree.fromstring(output, remove_empty_top_bracketing=True)
         except Exception:
             parse = None
-        return parse
+        finally:
+            return parse
+
+
+    def parse(self, tokens):
+        parse = self.__perform_parsing__(tokens)
+        return self.__get_nltk_parse_tree__(parse)
+
+
+    def __get_nltk_parse_tree__(self, tree):
+
+        def create_tree(tree):
+            nodes = []
+            for n in tree:
+                subtrees = [subtree for subtree in n.subtrees(filter=lambda k: k != n)]
+                if len(subtrees) > 0:
+                    subnodes = create_tree(n)
+                    nodes.append(ParentedTree(n.label(), subnodes))
+                else:
+                    parent_label = n.parent().label() if n.parent() is not None \
+                                                         and n.parent().label() not in ['S', 'ROOT'] else None
+                    nodes.append(ParentedTree(parent_label, [(n[0], n.label())]))
+            return nodes
+
+        def move_up(tree):
+            for n in tree:
+                if isinstance(n, Tree):
+                    subtrees = [subtree for subtree in n.subtrees(filter=lambda k: k != n)]
+                    for subtree in subtrees:
+                        if subtree.label() == n.label():
+                            tmp = subtree
+                            parent = subtree.parent()
+                            parent.remove(tmp)
+                            subsub = [s for s in subtree.subtrees(filter=lambda k: k != subtree)]
+                            if len(subsub) == 0:
+                                n.extend(tmp.leaves())
+                            else:
+                                move_up(subtree)
+            return tree
+
+        tree = ParentedTree.convert(tree)
+        new_tree = ParentedTree('S', create_tree(tree))
+        return move_up(new_tree)
 
 
 class OpenNERChunker(OpenNLPChunker):
@@ -100,7 +142,7 @@ class OpenNERChunker(OpenNLPChunker):
 
     def parse(self, tokens):
 
-        treeObj = OpenNLPChunker.parse(self, tokens)
+        treeObj = self.__perform_parsing__(tokens)
         treeStr = treeObj.__str__()
 
         _input = ' '.join([token[0] for token in tokens])
@@ -126,10 +168,10 @@ class OpenNERChunker(OpenNLPChunker):
         matches = tag_match.findall(output)
         for match in matches:
             tagname = match[0].upper()
-            pattern = '\s+'.join('\(\s*'+ token + '\s*/\s*[A-Z]+\s*\)'
+            pattern = '\s+'.join('\(\s*[A-Z]+\s+' + token + '\s*\)'
                                  for token in match[1].strip().split(' '))
             tpattern = '(?P<token>'+ pattern + ')'
-            tagged_pattern = '('+ tagname + ' (\g<token>))'
+            tagged_pattern = '('+ tagname + ' \g<token>)'
             treeStr = re.sub(tpattern, tagged_pattern, treeStr, flags=re.UNICODE)
             # "Move up" NER tags when possible
             treeStr = re.sub('\(\s*NP\s+(?P<subtree>\(' + tagname + '(.*)\s*\)\s*\))\s*\)',
@@ -137,10 +179,13 @@ class OpenNERChunker(OpenNLPChunker):
         # Add punctuation tags if use_punc_tag is set
         treeStr = self.__parse_punc_tags__(treeStr)
         try:
-            parse = Tree.fromstring(treeStr)
+            parse = Tree.fromstring(treeStr, remove_empty_top_bracketing=True)
+            parse = self.__get_nltk_parse_tree__(parse)
         except Exception:
             parse = None
-        return parse
+        finally:
+            return parse
+
 
 
 class OpenNERChunkerMulti(OpenNLPChunker):
@@ -152,7 +197,7 @@ class OpenNERChunkerMulti(OpenNLPChunker):
 
     def parse(self, tokens):
 
-        treeObj = OpenNLPChunker.parse(self, tokens)
+        treeObj = self.__perform_parsing__(tokens)
         treeStr = treeObj.__str__()
 
         _input = ' '.join([token[0] for token in tokens])
@@ -179,10 +224,10 @@ class OpenNERChunkerMulti(OpenNLPChunker):
             matches = tag_match.findall(output)
             for match in matches:
                 tagname = match[0].upper()
-                pattern = '\s+'.join('\(\s*'+ token + '\s*/\s*[A-Z]+\s*\)'
+                pattern = '\s+'.join('\(\s*[A-Z]+\s+' + token + '\s*\)'
                                      for token in match[1].strip().split(' '))
                 tpattern = '(?P<token>'+ pattern + ')'
-                tagged_pattern = '('+ tagname + ' (\g<token>))'
+                tagged_pattern = '('+ tagname + ' \g<token>)'
                 treeStr = re.sub(tpattern, tagged_pattern, treeStr, flags=re.UNICODE)
                 # "Move up" NER tags when possible
                 treeStr = re.sub('\(\s*NP\s+(?P<subtree>\(' + tagname + '(.*)\s*\)\s*\))\s*\)',
@@ -190,7 +235,9 @@ class OpenNERChunkerMulti(OpenNLPChunker):
         # Add punctuation tags if use_punc_tag is set
         treeStr = self.__parse_punc_tags__(treeStr)
         try:
-            parse = Tree.fromstring(treeStr)
+            parse = Tree.fromstring(treeStr, remove_empty_top_bracketing=True)
+            parse = self.__get_nltk_parse_tree__(parse)
         except Exception:
             parse = None
-        return parse
+        finally:
+            return parse
