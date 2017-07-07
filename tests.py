@@ -40,9 +40,8 @@ class OpenNLPTest(unittest.TestCase):
                            path_to_model=os.path.join(opennlp_dir, 'opennlp_models', 'en-pos-maxent.bin'))
         phrase = 'Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .'
         sentence = tt.tag(phrase)
-        cp = OpenNLPChunker(language=language,
-                            path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
-                            path_to_model=os.path.join(opennlp_dir, 'opennlp_models', 'en-chunker.bin'))
+        cp = OpenNLPChunker(path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+                            path_to_chunker=os.path.join(opennlp_dir, 'opennlp_models', 'en-chunker.bin'))
         print(cp.parse(sentence))
 
 
@@ -56,9 +55,8 @@ class OpenNLPTest(unittest.TestCase):
         print(sentence)
         # There should not be OpenNLP chunker for German language, thus OSError is thrown
         with self.assertRaises(OSError):
-            cp = OpenNLPChunker(language=language,
-                                path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
-                                path_to_model=os.path.join(opennlp_dir, 'opennlp_models', 'de-chunker.bin'))
+            cp = OpenNLPChunker(path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+                                path_to_chunker=os.path.join(opennlp_dir, 'opennlp_models', 'de-chunker.bin'))
             print(cp.parse(sentence))
 
 
@@ -69,12 +67,27 @@ class OpenNLPTest(unittest.TestCase):
                            path_to_model=os.path.join(opennlp_dir, 'opennlp_models', 'en-pos-maxent.bin'))
         phrase = 'Pierre Vinken , 61 years old , will join Martin Vinken as a nonexecutive director Nov. 29 .'
         sentence = tt.tag(phrase)
-        cp = OpenNERChunker(language=language,
-                            path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+        cp = OpenNERChunker(path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
                             path_to_chunker=os.path.join(opennlp_dir, 'opennlp_models',
                                                          '{}-chunker.bin'.format(language)),
                             path_to_ner_model=os.path.join(opennlp_dir, 'opennlp_models',
                                                            '{}-ner-person.bin'.format(language)))
+        print(cp.parse(sentence))
+
+
+    def test_opennlp_ner_chunker_with_punc(self):
+        language = 'en'
+        tt = OpenNLPTagger(language=language,
+                           path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+                           path_to_model=os.path.join(opennlp_dir, 'opennlp_models', 'en-pos-maxent.bin'))
+        phrase = 'Pierre Vinken , 61 years old , will join Martin Vinken as a nonexecutive director Nov. 29 .'
+        sentence = tt.tag(phrase)
+        cp = OpenNERChunker(path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+                            path_to_chunker=os.path.join(opennlp_dir, 'opennlp_models',
+                                                         '{}-chunker.bin'.format(language)),
+                            path_to_ner_model=os.path.join(opennlp_dir, 'opennlp_models',
+                                                           '{}-ner-person.bin'.format(language)),
+                            use_punc_tag=True)
         print(cp.parse(sentence))
 
 
@@ -85,8 +98,7 @@ class OpenNLPTest(unittest.TestCase):
                            path_to_model=os.path.join(opennlp_dir, 'opennlp_models', 'en-pos-maxent.bin'))
         phrase = 'John Haddock , 32 years old male , travelled to Cambridge , USA in October 20 while paying 6.50 dollars for the ticket'
         sentence = tt.tag(phrase)
-        cp = OpenNERChunkerMulti(language=language,
-                                 path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
+        cp = OpenNERChunkerMulti(path_to_bin=os.path.join(opennlp_dir, 'apache-opennlp', 'bin'),
                                  path_to_chunker=os.path.join(opennlp_dir, 'opennlp_models',
                                                               '{}-chunker.bin'.format(language)),
                                  ner_models=[

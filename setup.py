@@ -8,12 +8,12 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 
 setup(name='nltk-opennlp',
-      version='1.0.0',
+      version='1.0.1',
       description='NLTK interface with OpenNLP',
       long_description=README,
       author='Paulius Danenas',
       author_email='danpaulius@gmail.com',
-      url='https://github.com/paudan/treetagger-python',
+      url='https://github.com/paudan/opennlp-python',
       py_modules=['nltk-opennlp'],
       packages=['nltk_opennlp'],
       install_requires=['nltk'],
