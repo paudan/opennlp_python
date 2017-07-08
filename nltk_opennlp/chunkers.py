@@ -113,19 +113,22 @@ class OpenNLPChunker(ChunkParserI):
             return nodes
 
         def move_up(tree):
-            for n in tree:
+                
+            for i in range(len(tree[:])):
+                n = tree[i]
                 if isinstance(n, Tree):
-                    subtrees = [subtree for subtree in n.subtrees(filter=lambda k: k != n)]
+                    subtrees = [subtree for subtree in n.subtrees(filter=lambda k: k != n or k.label() is None)]
                     for subtree in subtrees:
-                        if subtree.label() == n.label():
+                        if subtree.label() == n.label() or subtree.label() is None:
                             tmp = subtree
                             parent = subtree.parent()
                             parent.remove(tmp)
                             subsub = [s for s in subtree.subtrees(filter=lambda k: k != subtree)]
                             if len(subsub) == 0:
-                                n.extend(tmp.leaves())
+                                for k in range(len(tmp.leaves())-1, -1, -1):
+                                    parent.insert(i, tmp.leaves()[k])
                             else:
-                                move_up(subtree)
+                                move_up(n)
             return tree
 
         tree = ParentedTree.convert(tree)

@@ -66,16 +66,16 @@ The output is a parse tree:
 
     (S
       (NP Pierre/NNP Vinken/NNP)
-      (None ,/,)
+      ,/,
       (NP 61/CD years/NNS)
       (ADJP old/JJ)
-      (None ,/,)
+      ,/,
       (VP will/MD join/VB)
       (NP the/DT board/NN)
       (PP as/IN)
       (NP a/DT nonexecutive/JJ director/NN)
       (NP Nov./NNP 29/CD)
-      (None ./.))
+      ./.)
 
 Note, that is possible to use PUNC tag to tag standalone punctuation marks, using ``use_punc_tag`` parameter. After setting this param, the output would be come as following:
 
@@ -83,16 +83,16 @@ Note, that is possible to use PUNC tag to tag standalone punctuation marks, usin
 
     (S
       (PERSON Pierre/NNP Vinken/NNP)
-      (None ,/PUNC)
+      ,/PUNC
       (NP 61/CD years/NNS)
       (ADJP old/JJ)
-      (None ,/PUNC)
+      ,/PUNC
       (VP will/MD join/VB)
       (PERSON Martin/NNP Vinken/NNP)
       (PP as/IN)
       (NP a/DT nonexecutive/JJ director/NN)
       (NP Nov./NNP 29/CD)
-      (None ./PUNC))
+      ./PUNC)
 
 Tagging a german sentence from Python is similar, just need to use diferent language and pre-trained model:
 
@@ -137,16 +137,16 @@ The output is a chunk parse tree with particular types of entities:
 
     (S
       (PERSON Pierre/NNP Vinken/NNP)
-      (None ,/,)
+      ,/,
       (NP 61/CD years/NNS)
       (ADJP old/JJ)
-      (None ,/,)
+      ,/,
       (VP will/MD join/VB)
       (PERSON Martin/NNP Vinken/NNP)
       (PP as/IN)
       (NP a/DT nonexecutive/JJ director/NN)
       (NP Nov./NNP 29/CD)
-      (None ./.))
+      ./.)
 
 A multi-tagger option is similar, except that it allows to set multiple NER models for tagging:
 
@@ -171,14 +171,14 @@ The resuting chunk tree contains multiple types of identified entities:
 
     (S
       (PERSON John/NNP Haddock/NNP)
-      (None ,/,)
+      ,/,
       (NP 32/CD years/NNS)
       (NP old/JJ male/NN)
-      (None ,/,)
+      ,/,
       (VP travelled/VBN)
       (PP to/TO)
       (LOCATION Cambridge/NNP)
-      (None ,/,)
+      ,/,
       (NP USA/NNP)
       (PP in/IN)
       (DATE October/NNP 20/CD)
