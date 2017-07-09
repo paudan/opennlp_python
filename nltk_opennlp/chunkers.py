@@ -77,6 +77,7 @@ class OpenNLPChunker(ChunkParserI):
         # Clean the execution time information
         output = re.sub(r"\nExecution time:(.*)$", "", stdout)
         # Transform into compatible parse tree string
+        output = self.__encode__(output)
         output = output.replace("[", "(").replace("]", " )")
         pattern = re.compile(r'\s+([^_\(\)]+)_([^_\(\)]+)\s+')
         output = re.sub(pattern, r' (\2 \1) ', output)
@@ -97,6 +98,27 @@ class OpenNLPChunker(ChunkParserI):
         return self.__get_nltk_parse_tree__(parse)
 
 
+    __encodings__ = {
+        "(": "xleftbrackx", ")": "xrightbrackx"
+    }
+
+    def __encode__(self, token):
+        if token is None:
+            return token
+        for enc in self.__encodings__:
+            token = token.replace(enc, self.__encodings__[enc])
+        return token
+
+
+    def __decode_(self, token):
+        if token is None:
+            return token
+        inv_map = {v: k for k, v in self.__encodings__.items()}
+        for enc in inv_map:
+            token = token.replace(enc, inv_map[enc])
+        return token
+
+
     def __get_nltk_parse_tree__(self, tree):
 
         def create_tree(tree):
@@ -109,7 +131,7 @@ class OpenNLPChunker(ChunkParserI):
                 else:
                     parent_label = n.parent().label() if n.parent() is not None \
                                                          and n.parent().label() not in ['S', 'ROOT'] else None
-                    nodes.append(ParentedTree(parent_label, [(n[0], n.label())]))
+                    nodes.append(ParentedTree(parent_label, [(self.__decode_(n[0]), self.__decode_(n.label()))]))
             return nodes
 
         def move_up(tree):
@@ -118,6 +140,8 @@ class OpenNLPChunker(ChunkParserI):
                 n = tree[i]
                 if isinstance(n, Tree):
                     subtrees = [subtree for subtree in n.subtrees(filter=lambda k: k != n or k.label() is None)]
+                    if i == 0:
+                        subtrees = subtrees[::-1]
                     for subtree in subtrees:
                         if subtree.label() == n.label() or subtree.label() is None:
                             tmp = subtree

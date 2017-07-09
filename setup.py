@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 
 setup(name='nltk-opennlp',
-      version='1.0.1',
+      version='1.0.2',
       description='NLTK interface with OpenNLP',
       long_description=README,
       author='Paulius Danenas',
