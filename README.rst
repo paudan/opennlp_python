@@ -29,7 +29,8 @@ Tagging a sentence from Python:
 
 .. code:: python
 
-    from opennlp_tagger import OpenNLPTagger
+    from nltk_opennlp.taggers import OpenNLPTagger
+
     tt = OpenNLPTagger(language='en',
                         path_to_bin=os.path.join('/path/to/opennlp/installation', 'bin'),
                         path_to_model=os.path.join('/path/to/opennlp/models', 'en-pos-maxent.bin'))
@@ -50,6 +51,9 @@ The output is a list of (token, tag):
 Chunking the same sentence from Python will produce a parse tree:
 
 .. code:: python
+
+    from nltk_opennlp.chunkers import OpenNLPChunker
+    from nltk_opennlp.taggers import OpenNLPTagger
 
     tt = OpenNLPTagger(language='en',
                        path_to_bin=os.path.join('/path/to/opennlp/installation', 'bin'),
@@ -98,7 +102,8 @@ Tagging a german sentence from Python is similar, just need to use diferent lang
 
 .. code:: python
 
-    from opennlp_tagger import OpenNLPTagger
+    from nltk_opennlp.taggers import OpenNLPTagger
+
     tt = OpenNLPTagger(language='de',
                         path_to_bin=os.path.join('/path/to/opennlp/installation', 'bin'),
                         path_to_model=os.path.join('/path/to/opennlp/models', 'de-pos-maxent.bin'))
@@ -118,6 +123,8 @@ This module also supports named entity recognition, which allows to tag particul
 is performed on the set of (token, tag) entries (note, that NLTK taggers could be used instead of ``OpenNLPTagger``):
 
 .. code:: python
+
+    from nltk_opennlp.chunkers import OpenNERChunker
 
     language='en'
     tt = OpenNLPTagger(language=language,
@@ -151,6 +158,8 @@ The output is a chunk parse tree with particular types of entities:
 A multi-tagger option is similar, except that it allows to set multiple NER models for tagging:
 
 .. code:: python
+
+    from nltk_opennlp.chunkers import OpenNERChunkerMulti
 
     language='en'
     phrase = 'John Haddock , 32 years old male , travelled to Cambridge , USA in October 20 while paying 6.50 dollars for the ticket'
