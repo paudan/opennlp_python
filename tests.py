@@ -54,11 +54,12 @@ class OpenNLPTest(unittest.TestCase):
         phrase = 'Das Haus hat einen großen hübschen Garten.'
         sentence = tt.tag(phrase)
         print(sentence)
-        # There should not be OpenNLP chunker for German language, thus OSError is thrown
-        with self.assertRaises(OSError):
-            cp = OpenNLPChunker(path_to_bin=os.path.join(opennlp_dir, 'bin'),
-                                path_to_chunker=os.path.join(models_dir, 'de-chunker.bin'))
-            print(cp.parse(sentence))
+        # There should not be OpenNLP chunker for German language, thus OSError is thrown in Linux
+        if os.name != 'nt':
+            with self.assertRaises(OSError):
+                cp = OpenNLPChunker(path_to_bin=os.path.join(opennlp_dir, 'bin'),
+                                    path_to_chunker=os.path.join(models_dir, 'de-chunker.bin'))
+                print(cp.parse(sentence))
 
 
     def test_opennlp_ner_chunker(self):
