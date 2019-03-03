@@ -52,7 +52,6 @@ class OpenNLPTagger(TaggerI):
 
     def tag(self, sentences):
 
-        # Write the actual sentences to the temporary input file
         if isinstance(sentences, list):
             _input = ''
             for sent in sentences:
@@ -68,13 +67,8 @@ class OpenNLPTagger(TaggerI):
         # Run the tagger and get the output
         gc.collect()
         p = Popen([self._opennlp_bin, "POSTagger", self._model_path],
-                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
-
-        if sys.version_info >= (3,):
-            (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
-            stdout = stdout.decode('utf-8')
-        else:
-            (stdout, stderr) = p.communicate(_input)
+                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        (stdout, stderr) = p.communicate(_input)
 
         # Check the return code.
         if p.returncode != 0:

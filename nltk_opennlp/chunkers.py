@@ -62,7 +62,7 @@ class OpenNLPChunker(ChunkParserI):
 
         gc.collect()
         p = Popen([self._opennlp_bin, "ChunkerME", self._model_path],
-                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
         if sys.version_info >= (3,):
             (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
@@ -176,7 +176,7 @@ class OpenNERChunker(OpenNLPChunker):
 
         gc.collect()
         p = Popen([self._opennlp_bin, "TokenNameFinder", self._ner_model],
-                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                  shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
         if sys.version_info >= (3,):
             (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
@@ -232,7 +232,7 @@ class OpenNERChunkerMulti(OpenNLPChunker):
         for model in self._ner_models:
             gc.collect()
             p = Popen([self._opennlp_bin, "TokenNameFinder", model],
-                      shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+                      shell=False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
             if sys.version_info >= (3,):
                 (stdout, stderr) = p.communicate(bytes(_input, 'UTF-8'))
