@@ -1,5 +1,5 @@
-nltk-opennlp
-============
+Apache OpenNLP for Python NLTK toolkit
+=======================================
 
 NLTK interface with Apache OpenNLP
 
