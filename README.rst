@@ -12,7 +12,7 @@ Dependencies
 -  Python 2.7 or Python 3
 -  `NLTK <http://nltk.org/>`__
 
-Tested with OpenNLP 1.8 (using models built with 1.5), Python 2.7/3.5 and NLTK 3.2.4
+Tested with OpenNLP 1.8 (using models built with 1.5), Python 2.7/3.5/3.6 and NLTK 3.2.4
 
 Installation
 ------------
