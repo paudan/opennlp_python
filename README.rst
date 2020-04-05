@@ -22,6 +22,15 @@ have downloaded and installed the `Apache OpenNLP <https://opennlp.apache.org/>`
 itself. You will also need different tagger/chunker models; some of them are provided in
 `this repository <http://opennlp.sourceforge.net/models-1.5/>`__
 
+OpenNLP setup can be automated using ``build.py`` script which will automatically download OpenNLP binaries and models for predefined languages.
+By default, if they will be installed into current directory. ``pybuilder`` package is required to run this script; it can be installed with ``pip``:
+
+::
+
+  pip3 install pybuilder
+
+After cloning this repo, run ``pyb`` in its directory which contains the ``build.py`` file. Verify if the installation was successful by running tests in ``tests.py``
+
 Usage
 -----
 
